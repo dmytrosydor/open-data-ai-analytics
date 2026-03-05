@@ -4,7 +4,9 @@ from pathlib import Path
 
 
 def generate_cluster_map():
-
+    art = Path("artifacts/visualization")
+    art.mkdir(parents=True, exist_ok=True)
+    (art / "run.log").write_text("Visualization started\n", encoding="utf-8")
     data_path = Path("../reports/clustered_data.csv")
 
     if not data_path.exists():
@@ -32,7 +34,7 @@ def generate_cluster_map():
     m.save(output_path)
 
     print(f"Map saved to {output_path}")
-
+    (art / "run.log").write_text("Map generated: cluster_map.html\n", encoding="utf-8")
 
 if __name__ == "__main__":
     generate_cluster_map()
