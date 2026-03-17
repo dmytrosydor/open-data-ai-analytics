@@ -1,5 +1,4 @@
 import folium
-import pandas as pd
 from pathlib import Path
 from data_load import getDataFrame
 from data_quality import clean_data
