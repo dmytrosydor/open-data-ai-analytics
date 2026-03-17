@@ -51,8 +51,8 @@ def generate_cluster_map(df):
 
 
 if __name__ == "__main__":
-    # 1. Завантаження (через URL у вашому data_load.py)
-    df_raw = getDataFrame()
+    data_path = "../data/raw/dtp2024public.csv"
+    df_raw = getDataFrame(data_path)
 
     # 2. Очищення
     df = clean_data(df_raw)
