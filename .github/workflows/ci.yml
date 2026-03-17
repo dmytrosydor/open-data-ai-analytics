@@ -16,6 +16,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+      - run: uv sync --python 3.11.9
       - run: uv pip install ruff
       - run: uv run ruff check src/data_load.py
       - run: uv run python -m py_compile src/data_load.py
@@ -28,6 +29,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+      - run: uv sync --python 3.11.9
       - run: uv pip install ruff
       - run: uv run ruff check src/data_quality.py
       - run: uv run python -m py_compile src/data_quality.py
@@ -40,13 +42,13 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+      - run: uv sync --python 3.11.9
       - run: uv pip install ruff
       - run: uv run ruff check src/visualization.py
       - run: uv run python -m py_compile src/visualization.py
 
   # --- JOB 4: Фінальний запуск (чекає на перші три) ---
   run-visualization:
-    # КЛЮЧОВИЙ МОМЕНТ: Ця Job почнеться ТІЛЬКИ якщо попередні три пройшли успішно
     needs: [lint-data-load, lint-data-quality, lint-visualization]
     runs-on: ubuntu-latest
     steps:
@@ -54,15 +56,15 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-
+      
       - name: Install dependencies
         run: uv sync --python 3.11.9
-
+        
       - name: Run visualization module
         run: |
           cd src
           uv run --python 3.11.9 python visualization.py
-
+          
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
