@@ -18,10 +18,6 @@ def getDataFrame(path: str = "https://opendata.city-adm.lviv.ua/dataset/d07c92fd
         if not local_path.exists():
             raise FileNotFoundError(f"Файл не знайдено за шляхом: {local_path}")
         df = pd.read_csv(
-            local_path,
-            sep=";",
-            engine="python",
-            on_bad_lines="skip",
-            na_values=["null"]
+            local_path
         )
     return df

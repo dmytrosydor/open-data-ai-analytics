@@ -51,7 +51,7 @@ def generate_cluster_map(df):
 
 
 if __name__ == "__main__":
-    data_path = "../data/dtp2024public.csv"
+    data_path = "../data/raw/dtp2024public.csv"
     df_raw = getDataFrame(data_path)
 
     # 2. Очищення
