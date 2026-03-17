@@ -34,7 +34,7 @@ jobs:
       - name: Run visualization
         run: |
           cd src
-          uv run --python 3.11.9 python src/visualization.py
+          uv run --python 3.11.9 python visualization.py
 
 
       - name: Upload artifacts
