@@ -33,7 +33,7 @@ jobs:
 
       - name: Run visualization
         run: |
-          cd src
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/src
           uv run --python 3.11.9 python visualization.py
 
 
