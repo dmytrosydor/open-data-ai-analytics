@@ -1,4 +1,4 @@
-name: CI Modules (uv)
+name: CI Pipeline
 
 on:
   push:
@@ -8,44 +8,57 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-visualization:
+  # --- JOB 1: Перевірка data_load.py ---
+  lint-data-load:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv pip install ruff
+      - run: uv run ruff check src/data_load.py
+      - run: uv run python -m py_compile src/data_load.py
 
-      # Використовуємо сучасний і швидкий спосіб встановлення uv
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+  # --- JOB 2: Перевірка data_quality.py ---
+  lint-data-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv pip install ruff
+      - run: uv run ruff check src/data_quality.py
+      - run: uv run python -m py_compile src/data_quality.py
+
+  # --- JOB 3: Перевірка visualization.py ---
+  lint-visualization:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv pip install ruff
+      - run: uv run ruff check src/visualization.py
+      - run: uv run python -m py_compile src/visualization.py
+
+  # --- JOB 4: Фінальний запуск (чекає на перші три) ---
+  run-visualization:
+    # КЛЮЧОВИЙ МОМЕНТ: Ця Job почнеться ТІЛЬКИ якщо попередні три пройшли успішно
+    needs: [lint-data-load, lint-data-quality, lint-visualization]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
 
-      - name: Install dependencies (uv)
-        run: |
-          uv sync --python 3.11.9
-          uv pip install ruff
+      - name: Install dependencies
+        run: uv sync --python 3.11.9
 
-      # --- CI ДЛЯ КОЖНОГО МОДУЛЯ ОКРЕМО ---
-
-      - name: 1. CI Check - Data Load Module
-        run: |
-          uv run ruff check src/data_load.py
-          uv run python -m py_compile src/data_load.py
-
-      - name: 2. CI Check - Data Quality Module
-        run: |
-          uv run ruff check src/data_quality.py
-          uv run python -m py_compile src/data_quality.py
-
-      - name: 3. CI Check - Visualization Module
-        run: |
-          uv run ruff check src/visualization.py
-          uv run python -m py_compile src/visualization.py
-
-      # --- ФІНАЛЬНИЙ ЗАПУСК ---
-
-      - name: Run Full Pipeline
+      - name: Run visualization module
         run: |
           cd src
           uv run --python 3.11.9 python visualization.py
