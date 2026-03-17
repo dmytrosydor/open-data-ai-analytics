@@ -1,4 +1,4 @@
-name: CI Visualization (self-hosted)
+name: CI Modules (self-hosted)
 
 on:
   workflow_dispatch:
@@ -10,7 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -19,11 +18,32 @@ jobs:
       - name: Install deps (uv)
         run: |
           uv sync --python 3.11.9
+          # Додаємо ruff для перевірки якості коду
+          uv pip install ruff 
 
-      - name: Run visualization from src
+      # --- CI ДЛЯ КОЖНОГО МОДУЛЯ ОКРЕМО ---
+
+      - name: 1. CI Check - Data Load Module
+        run: |
+          uv run ruff check src/data_load.py
+          uv run python -m py_compile src/data_load.py
+
+      - name: 2. CI Check - Data Quality Module
+        run: |
+          uv run ruff check src/data_quality.py
+          uv run python -m py_compile src/data_quality.py
+
+      - name: 3. CI Check - Visualization Module
+        run: |
+          uv run ruff check src/visualization.py
+          uv run python -m py_compile src/visualization.py
+
+      # --- ФІНАЛЬНИЙ ЗАПУСК ---
+
+      - name: Run Full Pipeline
         run: |
           cd src
-          uv run --python 3.11.9 python visualization.py
+          uv run python visualization.py
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
