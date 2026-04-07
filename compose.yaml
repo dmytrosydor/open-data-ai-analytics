@@ -1,0 +1,98 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-analytics_db}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - data_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-analytics_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  data_load:
+    build: ./data_load
+    environment:
+      DB_URL: ${DB_URL:-postgresql+psycopg2://user:password@db:5432/analytics_db}
+      DATA_PATH: ${DATA_PATH:-/app/data/dtp2024public.csv}
+    volumes:
+      - ./data:/app/data
+    networks:
+      - data_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  data_quality:
+    build: ./data_quality_analysis
+    environment:
+      DB_URL: ${DB_URL:-postgresql+psycopg2://user:password@db:5432/analytics_db}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+    volumes:
+      - shared_reports:/app/reports
+    networks:
+      - data_network
+    depends_on:
+      data_load:
+        condition: service_completed_successfully
+
+  data_research:
+    build: ./data_research
+    environment:
+      DB_URL: ${DB_URL:-postgresql+psycopg2://user:password@db:5432/analytics_db}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+    volumes:
+      - shared_reports:/app/reports
+    networks:
+      - data_network
+    depends_on:
+      data_load:
+        condition: service_completed_successfully
+
+  visualization:
+    build: ./visualization
+    environment:
+      DB_URL: ${DB_URL:-postgresql+psycopg2://user:password@db:5432/analytics_db}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+    volumes:
+      - shared_reports:/app/reports
+    networks:
+      - data_network
+    depends_on:
+      data_quality:
+        condition: service_completed_successfully
+
+  web:
+    build: ./web
+    environment:
+      FLASK_APP: ${FLASK_APP:-app.py}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+      DB_URL: ${DB_URL:-postgresql+psycopg2://user:password@db:5432/analytics_db}
+    ports:
+      - "${WEB_PORT:-5000}:5000"
+    volumes:
+      - shared_reports:/app/reports
+    networks:
+      - data_network
+    depends_on:
+      visualization:
+        condition: service_completed_successfully
+      data_research:
+        condition: service_completed_successfully
+      data_quality:
+        condition: service_completed_successfully
+
+networks:
+  data_network:
+
+volumes:
+  shared_reports:
+  postgres_data:
+
