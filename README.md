@@ -1,11 +1,35 @@
 # Аналіз даних ДТП у м. Львів (2024)
 
-**Мета:** Дослідити фактори аварійності та виявити географічні кластери ДТП за допомогою методів машинного навчання.
-**Джерело:** [data.gov.ua - Дані про ДТП](https://data.gov.ua/dataset/dtp-lvivska-mth)
+Проєкт перероблено на ізольовані сервіси з оркестрацією через Docker Compose.
 
-### Гіпотези:
-1. Основна причина ДТП — порушення правил маневрування.
-2. Центр Львова має найвищу щільність аварій.
-3. Існує 5 основних географічних кластерів, де варто посилити патрулювання.
+## Нова структура
 
-**Перевірка Конфлікту**
+- `data_load/` — завантаження CSV у PostgreSQL (`dtp_data`)
+- `data_quality_analysis/` — очищення даних, звіт `quality.json`, таблиця `dtp_data_cleaned`
+- `data_research/` — базові статистики (`df.describe()`), звіт `research.json`
+- `visualization/` — карта `cluster_map.html` і гістограма `cluster_histogram.png`
+- `web/` — Flask-додаток для перегляду JSON-звітів і графіків
+- `compose.yaml` — інтеграція сервісів, мережа, healthcheck, залежності
+
+## Запуск
+
+```powershell
+docker compose up --build
+```
+
+Після завершення one-shot сервісів відкрийте:
+
+- Web dashboard: `http://localhost:5000`
+
+## Спільні дані
+
+- Вхідний CSV: `data/dtp2024public.csv`
+- PostgreSQL: `analytics_db`
+- Спільний том звітів у контейнерах: `/app/reports`
+
+## Вихідні артефакти
+
+- `quality.json`
+- `research.json`
+- `plots/cluster_map.html`
+- `plots/cluster_histogram.png`
