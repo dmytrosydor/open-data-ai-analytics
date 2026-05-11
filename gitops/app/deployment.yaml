@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dtp-web
+  namespace: dtp-app
+  labels:
+    app: dtp-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dtp-web
+  template:
+    metadata:
+      labels:
+        app: dtp-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/dmytrosydor/open-data-ai-analytics/web:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: FLASK_APP
+              value: app.py
+            - name: DB_URL
+              value: postgresql+psycopg2://user:password@db:5432/analytics_db
+            - name: REPORTS_DIR
+              value: /app/reports
