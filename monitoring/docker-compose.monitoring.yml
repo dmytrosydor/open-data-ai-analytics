@@ -14,7 +14,7 @@ services:
       - "9090:9090"
     networks:
       - monitoring
-      - data_network
+      - app_data_network
     restart: unless-stopped
 
   grafana:
@@ -73,8 +73,9 @@ services:
 networks:
   monitoring:
     driver: bridge
-  data_network:
+  app_data_network:
     external: true
+    name: app_data_network
 
 volumes:
   prometheus_data:
